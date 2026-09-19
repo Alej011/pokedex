@@ -1,108 +1,116 @@
-Pokédex con React y TypeScript
+# Pokédex con React y TypeScript
 
-Proyecto académico que migra una Pokédex desarrollada en JavaScript a React con TypeScript. Permite buscar Pokémon por nombre o número mediante PokéAPI, mostrar su imagen, peso y altura, y conservar una colección sin duplicados.
+Proyecto académico que migra una Pokédex de JavaScript a React con TypeScript. Permite buscar Pokémon por nombre o número mediante PokéAPI y mostrar su imagen, peso y altura en una colección sin duplicados.
 
-La colección se guarda en memoria: se reinicia al recargar la página.
+## Tecnologías
 
-Instalación y ejecución
+- React y TypeScript.
+- Vite.
+- CSS Grid.
+- PokéAPI.
+- pnpm.
 
-Requisitos: Node.js compatible con Vite, pnpm instalado y conexión a Internet para consultar PokéAPI.
+## Instalación y ejecución
 
-Descarga o clona el proyecto y entra en su carpeta:
+Necesitas Node.js compatible con Vite, pnpm y conexión a Internet.
 
-cd pokedex-react
+1. Descarga o clona el proyecto.
+2. Abre una terminal dentro de la carpeta del proyecto.
+3. Instala las dependencias:
 
-Instala las dependencias:
+   ```bash
+   pnpm install
+   ```
 
-pnpm install
+4. Inicia el servidor de desarrollo:
 
-Inicia el servidor de desarrollo:
+   ```bash
+   pnpm run dev
+   ```
 
-pnpm run dev
+5. Abre la dirección indicada en la terminal, normalmente `http://localhost:5173`.
 
-Abre la dirección indicada en la terminal, normalmente http://localhost:5173. Para detener el servidor, presiona Ctrl + C.
+Para detener el servidor, presiona `Ctrl + C`.
 
-Para comprobar los tipos y generar la aplicación de producción:
+### Compilación de producción
 
+Comprueba los tipos y genera la aplicación:
+
+```bash
 pnpm run build
+```
 
-Para previsualizar esa compilación localmente:
+Previsualiza la compilación localmente:
 
+```bash
 pnpm run preview
+```
 
-Uso
+## Funcionamiento
 
-Escribe un nombre como ditto o un número como 132. La búsqueda comienza tras 500 ms sin escribir; Enter o el botón Buscar la ejecutan inmediatamente. Los Pokémon encontrados se agregan a la colección sin repetir su identificador.
+- Busca por nombre, como `ditto`, o por número, como `132`.
+- La búsqueda automática comienza después de 500 ms sin escribir.
+- Enter o el botón **Buscar** ejecutan la búsqueda inmediatamente.
+- Las solicitudes anteriores se cancelan cuando dejan de ser relevantes.
+- Los resultados se agregan a la colección sin duplicarse.
+- Se muestran los estados inicial, carga, éxito, resultado vacío y error.
+- Las búsquedas fallidas conservan los Pokémon encontrados anteriormente.
 
-La interfaz muestra los estados inicial, carga, éxito, resultado vacío y error. Una búsqueda sin resultados o fallida conserva la colección anterior. El formulario permite navegación con teclado y los mensajes utilizan role="status".
+La colección se guarda en memoria y se reinicia al recargar la página.
 
-Organización
+## Organización
 
-Elemento
+| Elemento | Responsabilidad |
+| --- | --- |
+| `App.tsx` | Coordina estados, eventos, temporizadores y solicitudes. |
+| `SearchForm` | Presenta el formulario controlado. |
+| `RequestStatus` | Muestra el estado de la búsqueda. |
+| `PokemonList` | Renderiza la colección con `map`. |
+| `PokemonCard` | Presenta los datos de un Pokémon. |
+| `pokemonService.ts` | Consulta PokéAPI y transforma su respuesta. |
+| Tipos de TypeScript | Describen datos, propiedades y estados de solicitud. |
 
-Responsabilidad
+## Flujo de búsqueda
 
-App.tsx
-
-Coordina el estado, los eventos y las solicitudes.
-
-SearchForm
-
-Presenta el formulario controlado y comunica cambios y envíos.
-
-RequestStatus
-
-Muestra el estado de la búsqueda.
-
-PokemonList
-
-Renderiza la colección con map y claves estables.
-
-PokemonCard
-
-Presenta los datos de un Pokémon.
-
-pokemonService.ts
-
-Consulta PokéAPI y adapta su respuesta, incluidas las unidades.
-
-Tipos de TypeScript
-
-Describen los datos, las props y los estados de solicitud.
-
-Flujo de búsqueda
-
+```mermaid
 flowchart TD
   A[Usuario interactúa] --> B{Acción}
-  B -->|Escribe| C[Actualiza texto y cancela trabajo anterior]
-  C --> D{Texto vacío}
-  D -->|Sí| E[Estado inicial]
-  D -->|No| F[Espera 500 ms]
-  B -->|Envía formulario| G[Elimina la espera pendiente]
-  F --> H[Consulta PokéAPI con señal de cancelación]
-  G --> I{Texto vacío}
-  I -->|Sí| E
-  I -->|No| H
-  H --> J{Resultado}
-  J -->|Encontrado| K[Éxito: agrega sin duplicar por id]
-  J -->|No encontrado| L[Resultado vacío]
-  J -->|Fallo| M[Mensaje de error]
-  J -->|Cancelación| N[Descarta sin mostrar error]
+  B -->|Escribe| C[Reinicia la espera de 500 ms]
+  B -->|Envía formulario| D[Elimina la espera pendiente]
+  C --> E{Texto vacío}
+  D --> E
+  E -->|Sí| F[Estado inicial]
+  E -->|No| G[Estado de carga y consulta a PokéAPI]
+  G --> H{Resultado}
+  H -->|Encontrado| I[Éxito: agrega sin duplicar]
+  H -->|No encontrado| J[Resultado vacío]
+  H -->|Fallo| K[Mensaje de error]
+  H -->|Cancelación| L[Descarta sin mostrar error]
+```
 
-Cada nueva solicitud cancela la anterior. Al desmontar el componente se limpian el temporizador y la solicitud activa.
+Cambiar el texto o iniciar otra búsqueda cancela la solicitud anterior. Al desmontar el componente, se limpian el temporizador y la solicitud activa.
 
-Conceptos aprendidos
+## Conceptos aprendidos
 
-Props y estado: las props entregan datos o funciones a los hijos; useState conserva datos y permite actualizar la interfaz.
+| Concepto | Aplicación en el proyecto |
+| --- | --- |
+| Props | Transmiten datos y funciones entre componentes. |
+| `useState` | Conserva el texto, la colección y el estado de solicitud. |
+| Formulario controlado | `value` refleja el estado y `onChange` lo actualiza. |
+| Renderizado declarativo | JSX describe la interfaz según los datos, sin manipular manualmente el DOM. |
+| `map`, `key` y `some` | Generan tarjetas, mantienen su identidad y detectan duplicados, respectivamente. |
+| Unión discriminada | `RequestState` define los estados posibles y los datos asociados a cada uno. |
+| Estrechamiento de tipos | Comprobar `null` y terminar con `return` permite utilizar el resultado como `Pokemon`. |
+| Debounce | Reduce solicitudes al esperar una pausa al escribir. |
+| `AbortController` | Cancela solicitudes iniciadas mediante una señal nueva por solicitud. |
+| `useRef` | Conserva temporizadores y controladores sin provocar renderizados. |
+| `useEffect` | Registra la limpieza de recursos al desmontar el componente. |
+| `async/await` | Permite esperar respuestas asíncronas y manejarlas con `try/catch/finally`. |
 
-Formulario controlado: value refleja el estado y onChange lo actualiza. preventDefault() evita la navegación tradicional al enviar.
+Los tipos de TypeScript comprueban el código durante el desarrollo; no validan automáticamente las respuestas externas.
 
-Renderizado declarativo: la interfaz se describe con JSX. map genera las tarjetas; key identifica cada una y some evita duplicados.
+La separación de responsabilidades permite que el servicio adapte los datos de PokéAPI y que los componentes se concentren en presentarlos.
 
-Tipos y estrechamiento: TypeScript comprueba estructuras durante el desarrollo. Descartar null con un return permite utilizar el resultado como Pokemon; los tipos no validan automáticamente respuestas externas.
+## Accesibilidad
 
-Debounce y cancelación: clearTimeout elimina una ejecución pendiente; AbortController cancela una solicitud iniciada. Cada solicitud necesita una señal nueva.
-
-Referencias y limpieza: useRef conserva temporizadores y controladores sin provocar renderizados; la limpieza de useEffect libera esos recursos.
-
-Asincronía: async/await gestiona la espera; try/catch/finally permite manejar resultados, fallos y limpieza.
+El formulario utiliza una etiqueta asociada al campo, admite navegación con teclado y envío con Enter. Los mensajes usan `role="status"` para comunicar cambios a los lectores de pantalla.
